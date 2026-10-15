@@ -1,0 +1,35 @@
+{
+ "name": "tp-07-salas-mongodb",
+  "version": "1.0.0",
+  "description": "Trabajo práctico 07 - Persistencia de reservas con MongoDB Atlas y Mongoose",
+  "main": "src/index.js",
+ 
+"scripts": {
+    "start": "node src/index.js",
+    "db:check": "node --env-file=.env scripts/comprobar-conexion.js",
+    "db:create": "node --env-file=.env scripts/crear-reserva.js",
+    "db:list": "node --env-file=.env scripts/listar-reservas.js",
+    "db:validate": "node scripts/probar-validaciones.js",
+    "format": "prettier --write src scripts",
+    "format:check": "prettier --check src scripts",
+    "lint": "eslint src scripts",
+    "check": "npm run format:check && npm run lint"
+},
+
+  "keywords": [],
+  "author": "Jennifer Denis Chaves",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "mongoose": "^9.11.1",
+    "morgan": "^1.12.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "prettier": "^3.9.10"
+  }
+}

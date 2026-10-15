@@ -1,0 +1,103 @@
+<section class="cabecera-pagina">
+
+    <span class="etiqueta-azul">
+        <%= seccion %>
+    </span>
+
+    <h1>Detalle de la reserva</h1>
+
+    <p>
+        Información completa de la reserva
+        seleccionada.
+    </p>
+
+</section>
+
+
+<section class="detalle-reserva">
+
+    <div class="detalle-encabezado">
+
+        <div>
+            <span class="sala">
+                <%= reserva.sala %>
+            </span>
+
+            <h2>
+                <%= reserva.estudiante %>
+            </h2>
+        </div>
+
+        <span class="id-grande">
+            Reserva #<%= reserva.id %>
+        </span>
+
+    </div>
+
+
+    <div class="detalle-grid">
+
+        <div class="dato-detalle">
+            <span>Estudiante</span>
+            <strong>
+                <%= reserva.estudiante %>
+            </strong>
+        </div>
+
+        <div class="dato-detalle">
+            <span>Email</span>
+            <strong>
+                <%= reserva.email %>
+            </strong>
+        </div>
+
+        <div class="dato-detalle">
+            <span>Sala</span>
+            <strong>
+                <%= reserva.sala %>
+            </strong>
+        </div>
+
+        <div class="dato-detalle">
+            <span>Fecha</span>
+            <strong>
+                <%= reserva.fecha %>
+            </strong>
+        </div>
+
+        <div class="dato-detalle">
+            <span>Turno</span>
+            <strong>
+                <%= reserva.turno %>
+            </strong>
+        </div>
+
+        <div class="dato-detalle">
+            <span>Cantidad de personas</span>
+            <strong>
+                <%= reserva.personas %>
+            </strong>
+        </div>
+
+    </div>
+
+
+    <div class="acciones-detalle">
+
+        <a
+            href="/reservas"
+            class="boton boton-azul"
+        >
+            ← Volver a reservas
+        </a>
+
+        <a
+            href="/reservas/nueva"
+            class="boton boton-claro"
+        >
+            Nueva reserva
+        </a>
+
+    </div>
+
+</section>

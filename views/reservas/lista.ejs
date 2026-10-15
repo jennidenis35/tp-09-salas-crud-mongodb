@@ -1,0 +1,103 @@
+<section class="cabecera-pagina">
+
+    <span class="etiqueta-azul">
+        <%= seccion %>
+    </span>
+
+    <h1>Reservas registradas</h1>
+
+    <p>
+        Consultá las salas reservadas y accedé
+        al detalle de cada solicitud.
+    </p>
+
+    <a
+        href="/reservas/nueva"
+        class="boton boton-azul"
+    >
+        + Nueva reserva
+    </a>
+
+</section>
+
+
+<section class="reservas-seccion">
+
+    <% if (reservas.length === 0) { %>
+
+        <div class="estado-vacio">
+
+            <h2>No hay reservas registradas</h2>
+
+            <p>
+                Todavía no se realizó ninguna reserva.
+            </p>
+
+            <a
+                href="/reservas/nueva"
+                class="boton boton-azul"
+            >
+                Crear primera reserva
+            </a>
+
+        </div>
+
+    <% } else { %>
+
+        <div class="grid-reservas">
+
+            <% reservas.forEach((reserva) => { %>
+
+                <article class="tarjeta-reserva">
+
+                    <div class="tarjeta-superior">
+
+                        <span class="sala">
+                            <%= reserva.sala %>
+                        </span>
+
+                        <span class="id-reserva">
+                            #<%= reserva.id %>
+                        </span>
+
+                    </div>
+
+                    <h2>
+                        <%= reserva.estudiante %>
+                    </h2>
+
+                    <div class="datos-reserva">
+
+                        <p>
+                            <strong>📅 Fecha:</strong>
+                            <%= reserva.fecha %>
+                        </p>
+
+                        <p>
+                            <strong>🕐 Turno:</strong>
+                            <%= reserva.turno %>
+                        </p>
+
+                        <p>
+                            <strong>👥 Personas:</strong>
+                            <%= reserva.personas %>
+                        </p>
+
+                    </div>
+
+                    <a
+                        href="/reservas/<%= reserva.id %>"
+                        class="enlace-detalle"
+                    >
+                        Ver detalle →
+                    </a>
+
+                </article>
+
+            <% }) %>
+
+        </div>
+
+    <% } %>
+
+</section>
