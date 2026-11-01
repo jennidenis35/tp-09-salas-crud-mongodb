@@ -57,7 +57,7 @@
                         </span>
 
                         <span class="id-reserva">
-                            #<%= reserva.id %>
+                            #<%= reserva._id %>
                         </span>
 
                     </div>
@@ -83,10 +83,15 @@
                             <%= reserva.personas %>
                         </p>
 
+                        <p>
+                           <strong>Estado:</strong>
+                            <%= reserva.estado %>
+                        </p>
+
                     </div>
 
                     <a
-                        href="/reservas/<%= reserva.id %>"
+                        href="/reservas/<%= reserva._id %>"
                         class="enlace-detalle"
                     >
                         Ver detalle →

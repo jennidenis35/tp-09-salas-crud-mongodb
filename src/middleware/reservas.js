@@ -49,7 +49,7 @@ function validarReserva(req, res, next) {
     error = "La cantidad de personas debe ser un entero entre 1 y 6.";
   }
 
-  // Si hay errores, responde 400 y detiene el proceso.
+  // Si hay errores, responde 400 y conserva los datos.
   if (error) {
     return res.status(400).render("reservas/nueva", {
       titulo: "Nueva reserva",
@@ -60,7 +60,7 @@ function validarReserva(req, res, next) {
     });
   }
 
-  // Si es válida, prepara los datos para el controlador.
+  // Prepara los datos para el controlador.
   req.reservaValidada = {
     estudiante,
     email,

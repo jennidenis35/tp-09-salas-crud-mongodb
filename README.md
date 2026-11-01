@@ -1,32 +1,34 @@
-# Trabajo Práctico 07 – MongoDB Atlas y Mongoose
+# Trabajo Práctico 08 – Endpoints persistentes de reservas de salas
 
 ## Introducción
 
-En este trabajo práctico continué con el sistema de reservas de salas de estudio que había realizado en el TP06.
+En este trabajo práctico continué con el sistema de reservas de salas de estudio desarrollado en los trabajos anteriores.
 
-En esta oportunidad aprendí a utilizar MongoDB Atlas para guardar información en una base de datos en la nube y Mongoose para trabajar con los datos desde Node.js.
+En esta oportunidad incorporé una API REST utilizando Node.js y Express, conectada a MongoDB Atlas mediante Mongoose.
 
-El objetivo fue comprobar que las reservas se pueden guardar y consultar, y que la información no se borra cuando termina el programa.
+El objetivo fue lograr que las reservas se almacenen de forma permanente en la base de datos y que puedan consultarse tanto desde la página web como desde los endpoints de la API.
 
 ## Herramientas utilizadas
 
 Para realizar el trabajo utilicé:
 
-- Visual Studio Code para escribir el código.
-- Node.js para ejecutar los programas.
-- Express para mantener funcionando la página web.
+- Visual Studio Code para escribir y organizar el código.
+- Node.js para ejecutar la aplicación.
+- Express para gestionar las rutas y solicitudes HTTP.
 - MongoDB Atlas para almacenar las reservas.
-- Mongoose para crear el modelo y validar los datos.
+- Mongoose para definir el modelo y validar los datos.
+- Postman para probar los endpoints de la API.
 - Prettier y ESLint para revisar el código.
 
 ## Organización del proyecto
 
-Tomé como base el TP06 y creé una carpeta nueva llamada `tp-07-salas-mongodb`, para no modificar el trabajo anterior.
+Tomé como base el TP07 y creé una carpeta nueva llamada `tp-08-salas-http-mongodb`, para conservar el trabajo anterior sin modificaciones.
 
-Organicé los archivos de la siguiente manera:
+La estructura principal del proyecto es la siguiente:
 
 
-tp-07-salas-mongodb/
+tp-08-salas-http-mongodb/
+├── evidencias/
 ├── public/
 ├── views/
 ├── src/
@@ -36,183 +38,225 @@ tp-07-salas-mongodb/
 │   ├── modelos/
 │   │   └── reserva.js
 │   ├── controladores/
+│   │   ├── reservas.js
+│   │   └── api-reservas.js
 │   ├── middleware/
+│   │   ├── reservas.js
+│   │   └── solicitudes.js
 │   ├── rutas/
+│   │   ├── reservas.js
+│   │   └── api-reservas.js
 │   ├── servicios/
+│   │   └── reservas.js
 │   ├── app.js
 │   └── index.js
 ├── scripts/
-│   ├── comprobar-conexion.js
-│   ├── crear-reserva.js
-│   ├── listar-reservas.js
-│   └── probar-validaciones.js
 ├── .env.example
 ├── .gitignore
 ├── eslint.config.js
 ├── package.json
+├── package-lock.json
 └── README.md
 
 
 ## Instalación y configuración
 
-Primero instalé las dependencias del proyecto:
-
+Primero instalé las dependencias del proyecto mediante el siguiente comando:
 
 npm install
 
 
-Después instalé Mongoose:
+Luego configuré la conexión con MongoDB Atlas utilizando un archivo `.env`.
 
-
-npm install mongoose
-
-
-Creé una cuenta en MongoDB Atlas y configuré un clúster gratuito llamado `Cluster0`.
-
-También configuré un usuario y la conexión desde mi computadora.
-
-Para guardar los datos de conexión utilicé un archivo `.env` con esta estructura:
+La estructura de las variables de entorno es:
 
 
 PORT=3000
 NODE_ENV=development
-MONGODB_URI=mongodb+srv://USUARIO:CLAVE@HOST/reservas_salas_u7?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://USUARIO:CLAVE@HOST/reservas_salas_u8?retryWrites=true&w=majority
 
 
-Los datos reales de acceso se guardan de forma privada y no se suben a GitHub.
+Los datos reales de conexión se guardan de forma privada y no se suben a GitHub.
+
+También configuré la base de datos `reservas_salas_u8` y la colección `reservas`.
+
+Para iniciar la aplicación utilicé:
+
+
+npm start
+
 
 ## Modelo de reservas
 
-Creé el archivo `src/modelos/reserva.js`, donde definí los datos que debe tener cada reserva.
+En el archivo `src/modelos/reserva.js` definí el modelo de las reservas utilizando Mongoose.
 
 Los campos son:
 
 - **estudiante:** nombre de quien realiza la reserva.
 - **email:** correo electrónico.
 - **sala:** sala que se desea reservar.
-- **fecha:** día de la reserva.
-- **turno:** mañana, tarde o noche.
+- **fecha:** fecha de la reserva.
+- **turno:** turno seleccionado.
 - **personas:** cantidad de personas que utilizarán la sala.
+- **estado:** situación de la reserva.
 
-También agregué validaciones para evitar datos incorrectos. Por ejemplo, no se pueden registrar más de seis personas, ingresar una sala que no exista o dejar el nombre del estudiante vacío.
+El campo `estado` tiene como valor predeterminado `pendiente` y permite los valores `pendiente` y `confirmada`.
 
-## Prueba de conexión
+También incorporé validaciones para evitar datos incorrectos, como nombres vacíos, correos inválidos, salas no permitidas o cantidades de personas fuera del rango establecido.
 
-Para comprobar la conexión creé el archivo `scripts/comprobar-conexion.js`.
+El estado se asigna automáticamente al crear una reserva y no puede ser definido por el cliente mediante la API.
 
-Lo ejecuté con:
+## Conexión con MongoDB Atlas
+
+Para conectar la aplicación con MongoDB Atlas utilicé los archivos de configuración ubicados en `src/config/`.
+
+La conexión se realiza antes de iniciar el servidor HTTP. De esta manera, la aplicación comienza a recibir solicitudes solamente cuando la base de datos está conectada correctamente.
+
+Para comprobar la conexión utilicé:
 
 
 npm run db:check
 
 
-Al principio tuve algunos problemas con la contraseña de MongoDB Atlas, pero después de corregir la conexión pude ingresar correctamente a la base de datos `reservas_salas_u7`.
+La terminal confirmó que la conexión con MongoDB Atlas se estableció correctamente y que la prueba finalizó sin crear reservas.
 
-El programa confirmó que la conexión funcionaba y luego la cerró.
+## Persistencia de las reservas
 
-## Crear una reserva
+En este trabajo reemplacé el almacenamiento en memoria por consultas a MongoDB Atlas.
 
-Después creé el archivo `scripts/crear-reserva.js`, que permite guardar una reserva en MongoDB Atlas.
+Para ello utilicé el servicio ubicado en `src/servicios/reservas.js`, que permite:
 
-Lo ejecuté con:
+- Crear reservas.
+- Listar todas las reservas.
+- Buscar una reserva por su identificador.
+- Contar las reservas registradas.
 
+De esta manera, tanto la página web como la API utilizan los mismos datos almacenados en la base de datos.
 
-npm run db:create
+## API REST y endpoints
 
+Separé las rutas de la página web de las rutas de la API.
 
-Utilicé estos datos de prueba:
+Las rutas de la API se encuentran en `src/rutas/api-reservas.js` y utilizan el controlador `src/controladores/api-reservas.js`.
 
-- Estudiante: Lucía Fernández.
-- Email: lucia@example.com.
-- Sala: Sala Norte.
-- Fecha: 2026-10-20.
-- Turno: Mañana.
-- Personas: 2.
+Implementé los siguientes endpoints:
 
-La reserva se guardó correctamente y MongoDB generó un identificador único.
+| Método | Endpoint | Función |
+|---|---|---|
+| GET | `/api/reservas` | Listar todas las reservas. |
+| GET | `/api/reservas/:id` | Consultar una reserva por ID. |
+| POST | `/api/reservas` | Crear una nueva reserva. |
 
-## Consultar las reservas
-
-Para consultar los datos guardados creé `scripts/listar-reservas.js`.
-
-Ejecuté:
-
-
-npm run db:list
+También incorporé el filtro por sala:
 
 
-El programa mostró la reserva de Lucía Fernández con todos sus datos.
-
-También comprobé desde el explorador de MongoDB Atlas que la reserva estaba dentro de la base `reservas_salas_u7`, en la colección `reservas`.
-
-De esta manera pude comprobar que la información seguía guardada aunque el programa de creación ya había terminado.
-
-## Pruebas de validación
-
-Para verificar que Mongoose rechaza los datos incorrectos, creé el archivo `scripts/probar-validaciones.js`.
-
-Ejecuté:
+GET /api/reservas?sala=Sala%20Norte
 
 
-npm run db:validate
+Este filtro permite consultar únicamente las reservas correspondientes a la sala seleccionada.
+
+La API valida los parámetros recibidos y rechaza aquellos que no están permitidos.
+
+No se implementaron operaciones PUT, PATCH ni DELETE, ya que no forman parte de los endpoints solicitados.
+
+## Creación de reservas mediante POST
+
+Para crear reservas desde la API utilicé el método HTTP `POST`.
+
+La solicitud recibe los datos de la reserva en formato JSON.
+
+Ejemplo:
 
 
-Realicé siete pruebas:
+{
+  "estudiante": "María González",
+  "email": "maria.prueba@example.com",
+  "sala": "Sala Norte",
+  "fecha": "2026-11-05",
+  "turno": "Tarde",
+  "personas": 3
+}
 
-1. Estudiante vacío.
-2. Correo electrónico incorrecto.
-3. Sala no permitida.
-4. Turno no permitido.
-5. Cantidad de personas igual a cero.
-6. Cantidad de personas mayor a seis.
-7. Cantidad de personas con decimales.
 
-Las siete pruebas dieron resultado correcto porque Mongoose rechazó los datos inválidos.
+Cuando los datos son correctos, la API responde con el código HTTP `201 Created`, devuelve la reserva creada y agrega el encabezado `Location` con la dirección del recurso.
 
-Después volví a consultar las reservas y comprobé que seguía existiendo solamente una. Esto confirmó que las pruebas no habían guardado información incorrecta.
+El campo `estado` se genera automáticamente con el valor `pendiente`.
+
+## Pruebas con Postman
+
+Utilicé Postman para probar el funcionamiento de los endpoints y verificar las respuestas HTTP.
+
+Realicé las siguientes pruebas:
+
+1. Consultar todas las reservas mediante GET.
+2. Consultar una reserva por su identificador.
+3. Consultar un identificador mal formado y comprobar la respuesta `400 Bad Request`.
+4. Consultar un identificador válido que no existe y comprobar la respuesta `404 Not Found`.
+5. Filtrar reservas por sala.
+6. Rechazar parámetros de consulta no permitidos.
+7. Crear una reserva mediante POST y comprobar la respuesta `201 Created`.
+8. Verificar el encabezado `Location`.
+9. Recuperar la reserva creada mediante GET.
+10. Enviar un JSON mal formado y comprobar que la API responda `400 Bad Request`.
+11. Enviar una reserva con una cantidad de personas fuera del límite permitido y comprobar que sea rechazada.
+
+Las pruebas confirmaron que la API responde correctamente y que los datos inválidos no generan nuevas reservas.
+
+## Persistencia después de reiniciar el servidor
+
+Una de las pruebas más importantes consistió en detener y volver a iniciar el servidor.
+
+Después del reinicio consulté nuevamente las reservas mediante la API y comprobé que los registros seguían disponibles con los mismos identificadores.
+
+También ingresé a la página web y verifiqué que las reservas creadas desde Postman aparecían en el listado.
+
+Esto permitió comprobar que la página web y la API trabajan sobre la misma información almacenada en MongoDB Atlas.
+
+Además, realicé consultas repetidas para comprobar que los registros no se duplicaran.
 
 ## Revisión del código
 
-También utilicé Prettier y ESLint para mantener el código ordenado y detectar posibles errores.
+Para mantener el código ordenado y detectar errores utilicé Prettier y ESLint.
 
-Ejecuté:
+Ejecuté los siguientes comandos:
 
 
 npm run format
 
 
-Y después:
+Y luego:
 
 
 npm run check
 
 
-La terminal confirmó que todos los archivos tenían el formato correcto y que ESLint no encontró errores.
-
-## Diferencia entre las reservas en memoria y MongoDB
-
-Una de las cosas que aprendí en este trabajo es la diferencia entre guardar información en memoria y guardarla en una base de datos.
-
-En la página web, las reservas todavía se manejan en memoria, como en el TP06. Esto significa que, si reinicio el servidor, vuelven a cargarse los datos iniciales.
-
-En cambio, las reservas que guardé en MongoDB Atlas permanecen almacenadas aunque cierre Node.js o apague la computadora.
-
-Por ahora utilicé MongoDB mediante programas independientes. No modifiqué las rutas de la página web para que consulten la base de datos.
+La verificación final confirmó que todos los archivos tienen el formato correcto y que ESLint no encontró errores.
 
 ## Conclusión
 
-Con este trabajo aprendí a conectar un proyecto de Node.js con MongoDB Atlas, crear un modelo utilizando Mongoose y guardar y consultar documentos.
+Con este trabajo aprendí a incorporar una API REST a un sistema de reservas y conectar sus endpoints con una base de datos MongoDB Atlas.
 
-También aprendí a realizar validaciones para evitar que se guarden datos incorrectos y a proteger la información privada de conexión.
+También aprendí a utilizar los métodos HTTP GET y POST, validar solicitudes, manejar respuestas como `200 OK`, `201 Created`, `400 Bad Request` y `404 Not Found`, y utilizar Postman para probar el funcionamiento de la API.
 
-Lo más importante fue comprobar que una reserva guardada en MongoDB sigue estando disponible después de cerrar y volver a ejecutar el programa.
+Lo más importante fue comprobar que las reservas se mantienen guardadas después de reiniciar el servidor y que tanto la página web como la API pueden consultar los mismos registros.
 
-El TP07 me permitió conocer una nueva forma de almacenar información que puedo utilizar más adelante en otros sistemas y aplicaciones.
+Este trabajo me permitió comprender mejor cómo funciona la comunicación entre el cliente, el servidor y una base de datos persistente.
 
-### Evidencia de la reserva guardada
+## Evidencias
 
-En esta captura se puede observar la reserva que guardé
-en MongoDB Atlas, dentro de la base de datos
-`reservas_salas_u7` y la colección `reservas`.
+Se incorporan las siguientes capturas como evidencia de las pruebas realizadas durante el desarrollo del trabajo práctico:
 
-![Reserva guardada en MongoDB Atlas](evidencias/reserva-mongodb.png.png)
+1. Conexión y base de datos en MongoDB Atlas.
+2. Documentos almacenados en la colección `reservas`.
+3. Inicio correcto del servidor y conexión con MongoDB Atlas.
+4. Listado de reservas desde la página web.
+5. Consulta general mediante GET.
+6. Consulta individual mediante GET.
+7. Creación de una reserva mediante POST.
+8. Respuesta `201 Created` y encabezado `Location`.
+9. Respuesta de error `400 Bad Request`.
+10. Respuesta de error `404 Not Found`.
+11. Filtro de reservas por sala.
+12. Integración entre la API y la página web.
+13. Persistencia de las reservas después de reiniciar el servidor.
+14. Verificación final de Prettier y ESLint.

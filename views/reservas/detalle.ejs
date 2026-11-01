@@ -29,7 +29,7 @@
         </div>
 
         <span class="id-grande">
-            Reserva #<%= reserva.id %>
+            Reserva #<%= reserva._id %>
         </span>
 
     </div>
@@ -76,6 +76,13 @@
             <span>Cantidad de personas</span>
             <strong>
                 <%= reserva.personas %>
+            </strong>
+        </div>
+
+        <div class="dato-detalle">
+            <span>Estado</span>
+            <strong>
+              <%= reserva.estado %>
             </strong>
         </div>
 

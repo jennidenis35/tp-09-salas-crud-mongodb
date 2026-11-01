@@ -42,6 +42,11 @@ const reservaSchema = new mongoose.Schema({
       message: "La cantidad de personas debe ser un número entero.",
     },
   },
+  estado: {
+    type: String,
+    enum: ["pendiente", "confirmada"],
+    default: "pendiente",
+  },
 });
 
 const Reserva = mongoose.model("Reserva", reservaSchema, "reservas");

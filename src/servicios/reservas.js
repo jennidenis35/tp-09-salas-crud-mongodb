@@ -1,38 +1,27 @@
-function crearServicioReservas(datosIniciales) {
-  const reservas = datosIniciales.map((reserva) => ({
-    ...reserva,
-  }));
+const Reserva = require("../modelos/reserva");
 
-  function listar() {
-    return reservas.map((reserva) => ({
-      ...reserva,
-    }));
+// Servicio encargado de trabajar con las reservas en MongoDB.
+function crearServicioReservas() {
+  // Obtener todas las reservas.
+  async function listar(filtros = {}) {
+    return await Reserva.find(filtros).sort({ _id: 1 }).lean();
   }
 
-  function buscarPorId(id) {
-    const reserva = reservas.find((item) => item.id === id);
-
-    return reserva ? { ...reserva } : null;
+  // Buscar una reserva por su identificador de MongoDB.
+  async function buscarPorId(id) {
+    return await Reserva.findById(id).lean();
   }
 
-  function contar() {
-    return reservas.length;
+  // Contar la cantidad total de reservas.
+  async function contar() {
+    return await Reserva.countDocuments();
   }
 
-  function crear(datosReserva) {
-    const ultimoId =
-      reservas.length > 0
-        ? Math.max(...reservas.map((reserva) => reserva.id))
-        : 0;
+  // Crear y guardar una nueva reserva.
+  async function crear(datosReserva) {
+    const nuevaReserva = await Reserva.create(datosReserva);
 
-    const nuevaReserva = {
-      id: ultimoId + 1,
-      ...datosReserva,
-    };
-
-    reservas.push(nuevaReserva);
-
-    return { ...nuevaReserva };
+    return nuevaReserva.toObject();
   }
 
   return {

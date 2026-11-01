@@ -1,70 +1,87 @@
 const { obtenerConfiguracion } = require("./config/entorno");
+
+const {
+  conectarBaseDatos,
+  desconectarBaseDatos,
+  describirErrorConexion,
+} = require("./config/base-datos");
+
 const crearServicioReservas = require("./servicios/reservas");
 const crearControladorReservas = require("./controladores/reservas");
+const crearControladorApiReservas = require("./controladores/api-reservas");
 const crearApp = require("./app");
 
-// Datos iniciales de las reservas.
-const datosIniciales = [
-  {
-    id: 1,
-    estudiante: "Ana Pérez",
-    email: "ana@email.com",
-    sala: "Sala Norte",
-    fecha: "2026-09-22",
-    turno: "Mañana",
-    personas: 2,
-  },
-  {
-    id: 2,
-    estudiante: "Lucas Gómez",
-    email: "lucas@email.com",
-    sala: "Sala Sur",
-    fecha: "2026-09-23",
-    turno: "Tarde",
-    personas: 4,
-  },
-  {
-    id: 3,
-    estudiante: "Carla Díaz",
-    email: "carla@email.com",
-    sala: "Sala Multimedia",
-    fecha: "2026-09-24",
-    turno: "Noche",
-    personas: 3,
-  },
-  {
-    id: 4,
-    estudiante: "Martín López",
-    email: "martin@email.com",
-    sala: "Sala Norte",
-    fecha: "2026-09-25",
-    turno: "Tarde",
-    personas: 5,
-  },
-];
+async function iniciarServidor() {
+  let etapa = "lectura de configuración";
 
-try {
-  // Leer y validar la configuración.
-  const configuracion = obtenerConfiguracion();
+  try {
+    // 1. Leer y validar la configuración.
+    const configuracion = obtenerConfiguracion();
 
-  // Crear una única instancia del servicio.
-  const servicio = crearServicioReservas(datosIniciales);
+    // 2. Conectar con MongoDB Atlas.
+    etapa = "conexión con MongoDB Atlas";
+    await conectarBaseDatos();
 
-  // Crear el controlador utilizando ese servicio.
-  const controlador = crearControladorReservas(servicio);
+    console.log("Conexión con MongoDB Atlas establecida.");
 
-  // Construir la aplicación Express.
-  const app = crearApp(controlador, configuracion);
+    // 3. Crear el servicio de reservas.
+    etapa = "creación del servicio de reservas";
+    const servicio = crearServicioReservas();
 
-  // Iniciar el servidor.
-  app.listen(configuracion.puerto, () => {
-    console.log(
-      `Servidor iniciado en http://localhost:${configuracion.puerto}`,
-    );
+    // 4. Crear los controladores.
+    etapa = "creación de los controladores";
+    const controlador = crearControladorReservas(servicio);
+    const controladorApi = crearControladorApiReservas(servicio);
 
-    console.log(`Entorno: ${configuracion.entorno}`);
-  });
-} catch (error) {
-  console.error(`Error de configuración: ${error.message}`);
-  process.exitCode = 1;
+    // 5. Construir la aplicación Express.
+    etapa = "configuración de la aplicación Express";
+    const app = crearApp(controlador, controladorApi, configuracion);
+
+    // 6. Iniciar el servidor HTTP.
+    etapa = "inicio del servidor HTTP";
+
+    const servidor = app.listen(configuracion.puerto, () => {
+      console.log(
+        `Servidor iniciado en http://localhost:${configuracion.puerto}`,
+      );
+
+      console.log(`Entorno: ${configuracion.entorno}`);
+    });
+
+    // Cierre ordenado del servidor y de MongoDB.
+    let cerrando = false;
+
+    async function cerrarServidor() {
+      if (cerrando) return;
+
+      cerrando = true;
+      console.log("\nCerrando servidor...");
+
+      servidor.close(async () => {
+        try {
+          await desconectarBaseDatos();
+          console.log("Conexión con MongoDB cerrada.");
+          process.exit(0);
+        } catch (error) {
+          console.error("Error al cerrar MongoDB:");
+          console.error(describirErrorConexion(error));
+          process.exit(1);
+        }
+      });
+    }
+
+    process.on("SIGINT", cerrarServidor);
+    process.on("SIGTERM", cerrarServidor);
+  } catch (error) {
+    console.error("\nNo se pudo iniciar el servidor.");
+    console.error(`Etapa del error: ${etapa}`);
+    console.error(`Tipo de error: ${error.name}`);
+    console.error(`Detalle: ${error.message}`);
+
+    await desconectarBaseDatos().catch(() => {});
+
+    process.exitCode = 1;
+  }
 }
+
+iniciarServidor();

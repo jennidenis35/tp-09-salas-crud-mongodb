@@ -1,3 +1,4 @@
+
 <section class="cabecera-pagina">
 
     <span class="etiqueta-azul">
@@ -44,6 +45,7 @@
                 name="estudiante"
                 value="<%= datos.estudiante || '' %>"
                 placeholder="Ej: María López"
+                required
             >
 
         </div>
@@ -56,11 +58,12 @@
             </label>
 
             <input
-                type="text"
+                type="email"
                 id="email"
                 name="email"
                 value="<%= datos.email || '' %>"
                 placeholder="Ej: maria@email.com"
+                required
             >
 
         </div>
@@ -75,6 +78,7 @@
             <select
                 id="sala"
                 name="sala"
+                required
             >
 
                 <option value="">
@@ -108,6 +112,7 @@
                 id="fecha"
                 name="fecha"
                 value="<%= datos.fecha || '' %>"
+                required
             >
 
         </div>
@@ -122,6 +127,7 @@
             <select
                 id="turno"
                 name="turno"
+                required
             >
 
                 <option value="">
@@ -159,6 +165,7 @@
                 step="1"
                 value="<%= datos.personas || '' %>"
                 placeholder="De 1 a 6"
+                required
             >
 
         </div>
