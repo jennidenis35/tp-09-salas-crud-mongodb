@@ -1,12 +1,12 @@
-# Trabajo Práctico 08 – Endpoints persistentes de reservas de salas
+# Trabajo Práctico 09 – CRUD de reservas de salas con MongoDB
 
 ## Introducción
 
-En este trabajo práctico continué con el sistema de reservas de salas de estudio desarrollado en los trabajos anteriores.
+En este trabajo práctico continué desarrollando el sistema de reservas de salas de estudio realizado en los trabajos anteriores.
 
-En esta oportunidad incorporé una API REST utilizando Node.js y Express, conectada a MongoDB Atlas mediante Mongoose.
+En esta etapa amplié la API REST incorporando las operaciones necesarias para completar el CRUD (Crear, Leer, Actualizar y Eliminar), utilizando Node.js, Express, MongoDB Atlas y Mongoose.
 
-El objetivo fue lograr que las reservas se almacenen de forma permanente en la base de datos y que puedan consultarse tanto desde la página web como desde los endpoints de la API.
+El objetivo fue permitir la creación, consulta, modificación y eliminación de reservas, manteniendo los datos almacenados de forma permanente en la base de datos.
 
 ## Herramientas utilizadas
 
@@ -22,12 +22,11 @@ Para realizar el trabajo utilicé:
 
 ## Organización del proyecto
 
-Tomé como base el TP07 y creé una carpeta nueva llamada `tp-08-salas-http-mongodb`, para conservar el trabajo anterior sin modificaciones.
+Tomé como base el trabajo práctico anterior y creé una nueva carpeta llamada `tp-09-salas-crud-mongodb`, para conservar el TP08 sin modificaciones.
 
 La estructura principal del proyecto es la siguiente:
 
-
-tp-08-salas-http-mongodb/
+tp-09-salas-crud-mongodb/
 ├── evidencias/
 ├── public/
 ├── views/
@@ -61,7 +60,8 @@ tp-08-salas-http-mongodb/
 
 ## Instalación y configuración
 
-Primero instalé las dependencias del proyecto mediante el siguiente comando:
+Primero instalé las dependencias del proyecto mediante:
+
 
 npm install
 
@@ -73,12 +73,12 @@ La estructura de las variables de entorno es:
 
 PORT=3000
 NODE_ENV=development
-MONGODB_URI=mongodb+srv://USUARIO:CLAVE@HOST/reservas_salas_u8?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://USUARIO:CLAVE@HOST/reservas_salas_u9?retryWrites=true&w=majority
 
 
 Los datos reales de conexión se guardan de forma privada y no se suben a GitHub.
 
-También configuré la base de datos `reservas_salas_u8` y la colección `reservas`.
+La base de datos utilizada es `reservas_salas_u9` y la colección es `reservas`.
 
 Para iniciar la aplicación utilicé:
 
@@ -94,23 +94,21 @@ Los campos son:
 
 - **estudiante:** nombre de quien realiza la reserva.
 - **email:** correo electrónico.
-- **sala:** sala que se desea reservar.
+- **sala:** sala seleccionada.
 - **fecha:** fecha de la reserva.
 - **turno:** turno seleccionado.
-- **personas:** cantidad de personas que utilizarán la sala.
+- **personas:** cantidad de personas.
 - **estado:** situación de la reserva.
 
-El campo `estado` tiene como valor predeterminado `pendiente` y permite los valores `pendiente` y `confirmada`.
+El campo `estado` permite los valores `pendiente` y `confirmada`, y tiene como valor predeterminado `pendiente`.
 
-También incorporé validaciones para evitar datos incorrectos, como nombres vacíos, correos inválidos, salas no permitidas o cantidades de personas fuera del rango establecido.
-
-El estado se asigna automáticamente al crear una reserva y no puede ser definido por el cliente mediante la API.
+También incorporé validaciones para controlar los datos obligatorios, las salas y turnos permitidos y la cantidad de personas, que debe ser un número entero entre 1 y 6.
 
 ## Conexión con MongoDB Atlas
 
-Para conectar la aplicación con MongoDB Atlas utilicé los archivos de configuración ubicados en `src/config/`.
+La conexión se realiza mediante los archivos ubicados en `src/config/`.
 
-La conexión se realiza antes de iniciar el servidor HTTP. De esta manera, la aplicación comienza a recibir solicitudes solamente cuando la base de datos está conectada correctamente.
+La aplicación establece la conexión con MongoDB Atlas antes de iniciar el servidor HTTP. De esta manera, comienza a recibir solicitudes solamente cuando la base de datos está disponible.
 
 Para comprobar la conexión utilicé:
 
@@ -118,145 +116,208 @@ Para comprobar la conexión utilicé:
 npm run db:check
 
 
-La terminal confirmó que la conexión con MongoDB Atlas se estableció correctamente y que la prueba finalizó sin crear reservas.
+La prueba confirmó que la conexión se estableció correctamente con `reservas_salas_u9` y finalizó sin crear reservas.
 
 ## Persistencia de las reservas
 
-En este trabajo reemplacé el almacenamiento en memoria por consultas a MongoDB Atlas.
+El almacenamiento de las reservas se realiza mediante el servicio ubicado en `src/servicios/reservas.js`.
 
-Para ello utilicé el servicio ubicado en `src/servicios/reservas.js`, que permite:
+Este servicio permite:
 
 - Crear reservas.
 - Listar todas las reservas.
 - Buscar una reserva por su identificador.
-- Contar las reservas registradas.
+- Contar las reservas.
+- Modificar reservas.
+- Eliminar reservas.
 
-De esta manera, tanto la página web como la API utilizan los mismos datos almacenados en la base de datos.
+De esta manera, tanto la página web como la API trabajan con los mismos documentos almacenados en MongoDB Atlas.
 
-## API REST y endpoints
+## API REST y operaciones CRUD
 
-Separé las rutas de la página web de las rutas de la API.
+En este trabajo amplié la API REST incorporando las operaciones de actualización y eliminación.
 
-Las rutas de la API se encuentran en `src/rutas/api-reservas.js` y utilizan el controlador `src/controladores/api-reservas.js`.
+Las rutas se encuentran en `src/rutas/api-reservas.js` y utilizan las funciones del controlador ubicado en `src/controladores/api-reservas.js`.
 
-Implementé los siguientes endpoints:
+Los endpoints implementados son:
 
 | Método | Endpoint | Función |
 |---|---|---|
 | GET | `/api/reservas` | Listar todas las reservas. |
 | GET | `/api/reservas/:id` | Consultar una reserva por ID. |
-| POST | `/api/reservas` | Crear una nueva reserva. |
+| POST | `/api/reservas` | Crear una reserva. |
+| PUT | `/api/reservas/:id` | Reemplazar los datos de una reserva. |
+| PATCH | `/api/reservas/:id` | Modificar parcialmente una reserva. |
+| DELETE | `/api/reservas/:id` | Eliminar una reserva. |
 
-También incorporé el filtro por sala:
+También mantuve el filtro por sala:
 
 
 GET /api/reservas?sala=Sala%20Norte
 
 
-Este filtro permite consultar únicamente las reservas correspondientes a la sala seleccionada.
+Este permite consultar las reservas correspondientes a una sala determinada.
 
-La API valida los parámetros recibidos y rechaza aquellos que no están permitidos.
+## Actualización de reservas mediante PUT
 
-No se implementaron operaciones PUT, PATCH ni DELETE, ya que no forman parte de los endpoints solicitados.
+Utilicé el método HTTP `PUT` para reemplazar los datos editables de una reserva existente.
 
-## Creación de reservas mediante POST
+La solicitud debe incluir todos los campos requeridos, incluyendo el estado.
 
-Para crear reservas desde la API utilicé el método HTTP `POST`.
+Si falta algún campo obligatorio o los datos no son válidos, el servidor responde con `400 Bad Request`.
 
-La solicitud recibe los datos de la reserva en formato JSON.
+Cuando la operación se realiza correctamente, devuelve `200 OK`.
 
-Ejemplo:
+## Actualización parcial mediante PATCH
+
+Incorporé el método HTTP `PATCH` para modificar solamente algunos datos de una reserva.
+
+En esta implementación se permite actualizar:
+
+- La cantidad de personas.
+- El estado de la reserva.
+
+También se permite enviar ambos campos juntos.
+
+El sistema rechaza los campos no permitidos, los cuerpos vacíos y los valores inválidos.
+
+Por ejemplo:
 
 
 {
-  "estudiante": "María González",
-  "email": "maria.prueba@example.com",
-  "sala": "Sala Norte",
-  "fecha": "2026-11-05",
-  "turno": "Tarde",
-  "personas": 3
+  "personas": 5,
+  "estado": "confirmada"
 }
 
 
-Cuando los datos son correctos, la API responde con el código HTTP `201 Created`, devuelve la reserva creada y agrega el encabezado `Location` con la dirección del recurso.
+Si la actualización es correcta, la API responde con `200 OK`.
 
-El campo `estado` se genera automáticamente con el valor `pendiente`.
+## Eliminación mediante DELETE
+
+Utilicé el método HTTP `DELETE` para eliminar una reserva mediante su identificador de MongoDB.
+
+Cuando la reserva existe y se elimina correctamente, el servidor responde con `204 No Content`.
+
+Si se intenta consultar o eliminar una reserva que no existe, responde con `404 Not Found`.
+
+## Validaciones y manejo de errores
+
+Incorporé validaciones para proteger la información almacenada y evitar solicitudes incorrectas.
+
+Entre los controles realizados se encuentran:
+
+- Verificar que los campos obligatorios estén completos.
+- Comprobar el formato básico del correo electrónico.
+- Aceptar únicamente las salas y turnos permitidos.
+- Controlar que la cantidad de personas sea un entero entre 1 y 6.
+- Validar los identificadores de MongoDB.
+- Rechazar campos no permitidos en las actualizaciones.
+- Comprobar que la reserva exista antes de modificarla o eliminarla.
+
+Los principales códigos HTTP utilizados son:
+
+| Código | Significado |
+|---|---|
+| 200 | Solicitud procesada correctamente. |
+| 201 | Reserva creada correctamente. |
+| 204 | Reserva eliminada correctamente, sin contenido de respuesta. |
+| 400 | Datos o solicitud inválidos. |
+| 404 | Reserva o recurso no encontrado. |
+| 500 | Error interno del servidor. |
 
 ## Pruebas con Postman
 
-Utilicé Postman para probar el funcionamiento de los endpoints y verificar las respuestas HTTP.
+Utilicé Postman para comprobar el funcionamiento de los endpoints y sus respuestas.
 
 Realicé las siguientes pruebas:
 
 1. Consultar todas las reservas mediante GET.
 2. Consultar una reserva por su identificador.
-3. Consultar un identificador mal formado y comprobar la respuesta `400 Bad Request`.
-4. Consultar un identificador válido que no existe y comprobar la respuesta `404 Not Found`.
-5. Filtrar reservas por sala.
-6. Rechazar parámetros de consulta no permitidos.
-7. Crear una reserva mediante POST y comprobar la respuesta `201 Created`.
-8. Verificar el encabezado `Location`.
-9. Recuperar la reserva creada mediante GET.
-10. Enviar un JSON mal formado y comprobar que la API responda `400 Bad Request`.
-11. Enviar una reserva con una cantidad de personas fuera del límite permitido y comprobar que sea rechazada.
+3. Crear una reserva mediante POST.
+4. Reemplazar los datos de una reserva mediante PUT.
+5. Modificar parcialmente la cantidad de personas mediante PATCH.
+6. Modificar el estado mediante PATCH.
+7. Rechazar campos no permitidos en PATCH.
+8. Rechazar un PATCH vacío.
+9. Rechazar una cantidad de personas superior a 6.
+10. Rechazar un PUT incompleto.
+11. Eliminar una reserva mediante DELETE.
+12. Comprobar que la reserva eliminada devuelve 404.
+13. Intentar eliminar nuevamente una reserva inexistente y comprobar el 404.
+14. Comprobar que las solicitudes inválidas no modifican los datos.
 
-Las pruebas confirmaron que la API responde correctamente y que los datos inválidos no generan nuevas reservas.
+Las pruebas permitieron verificar las respuestas HTTP y el correcto funcionamiento de las operaciones CRUD.
+
+## Validación del formulario web
+
+También comprobé que el formulario web continuara funcionando.
+
+Para ello realicé una creación válida desde la página web y una prueba con una cantidad de personas fuera del límite permitido.
+
+El formulario respondió correctamente y, ante los datos inválidos, el middleware rechazó la solicitud con `400 Bad Request`, mostrando el mensaje correspondiente y conservando los valores ingresados.
+
+Esto permitió verificar que las validaciones se realizan también del lado del servidor.
 
 ## Persistencia después de reiniciar el servidor
 
-Una de las pruebas más importantes consistió en detener y volver a iniciar el servidor.
+Para comprobar la persistencia, creé una reserva, modifiqué sus datos mediante PATCH y detuve el servidor.
 
-Después del reinicio consulté nuevamente las reservas mediante la API y comprobé que los registros seguían disponibles con los mismos identificadores.
+Luego volví a iniciarlo y consulté nuevamente la reserva mediante GET.
 
-También ingresé a la página web y verifiqué que las reservas creadas desde Postman aparecían en el listado.
+Comprobé que los datos modificados seguían almacenados en MongoDB Atlas, conservando el mismo identificador.
 
-Esto permitió comprobar que la página web y la API trabajan sobre la misma información almacenada en MongoDB Atlas.
+También verifiqué que la información aparecía correctamente en la página web.
 
-Además, realicé consultas repetidas para comprobar que los registros no se duplicaran.
+De esta manera confirmé que las operaciones de actualización se guardan de forma permanente y no se pierden al reiniciar la aplicación.
 
 ## Revisión del código
 
-Para mantener el código ordenado y detectar errores utilicé Prettier y ESLint.
+Para mantener el código organizado y detectar posibles errores utilicé Prettier y ESLint.
 
-Ejecuté los siguientes comandos:
+Ejecuté:
 
 
 npm run format
 
 
-Y luego:
+Y posteriormente:
 
 
 npm run check
 
 
-La verificación final confirmó que todos los archivos tienen el formato correcto y que ESLint no encontró errores.
+La verificación confirmó que los archivos tienen el formato correcto y que ESLint no encontró errores.
 
 ## Conclusión
 
-Con este trabajo aprendí a incorporar una API REST a un sistema de reservas y conectar sus endpoints con una base de datos MongoDB Atlas.
+Con este trabajo amplié el sistema de reservas incorporando las operaciones completas de una API REST mediante los métodos HTTP GET, POST, PUT, PATCH y DELETE.
 
-También aprendí a utilizar los métodos HTTP GET y POST, validar solicitudes, manejar respuestas como `200 OK`, `201 Created`, `400 Bad Request` y `404 Not Found`, y utilizar Postman para probar el funcionamiento de la API.
+Aprendí a crear, consultar, reemplazar, modificar parcialmente y eliminar documentos almacenados en MongoDB Atlas.
 
-Lo más importante fue comprobar que las reservas se mantienen guardadas después de reiniciar el servidor y que tanto la página web como la API pueden consultar los mismos registros.
+También trabajé con validaciones, respuestas HTTP, manejo de errores y pruebas mediante Postman.
 
-Este trabajo me permitió comprender mejor cómo funciona la comunicación entre el cliente, el servidor y una base de datos persistente.
+Una de las comprobaciones más importantes fue verificar que los cambios permanecieran guardados después de reiniciar el servidor y que la página web y la API utilizaran la misma información.
+
+Este trabajo me permitió comprender mejor el funcionamiento de las operaciones CRUD y la comunicación entre el cliente, el servidor y una base de datos persistente.
 
 ## Evidencias
 
-Se incorporan las siguientes capturas como evidencia de las pruebas realizadas durante el desarrollo del trabajo práctico:
+Se incorporan capturas de pantalla como evidencia del desarrollo y las pruebas realizadas:
 
 1. Conexión y base de datos en MongoDB Atlas.
 2. Documentos almacenados en la colección `reservas`.
-3. Inicio correcto del servidor y conexión con MongoDB Atlas.
+3. Inicio correcto del servidor.
 4. Listado de reservas desde la página web.
 5. Consulta general mediante GET.
 6. Consulta individual mediante GET.
 7. Creación de una reserva mediante POST.
-8. Respuesta `201 Created` y encabezado `Location`.
-9. Respuesta de error `400 Bad Request`.
-10. Respuesta de error `404 Not Found`.
-11. Filtro de reservas por sala.
-12. Integración entre la API y la página web.
-13. Persistencia de las reservas después de reiniciar el servidor.
-14. Verificación final de Prettier y ESLint.
+8. Actualización completa mediante PUT.
+9. Actualización parcial mediante PATCH.
+10. Modificación del estado mediante PATCH.
+11. Respuestas de validación `400 Bad Request`.
+12. Eliminación mediante DELETE.
+13. Respuestas `404 Not Found` posteriores a la eliminación.
+14. Persistencia después de reiniciar el servidor.
+15. Integración entre Postman, MongoDB Atlas y la página web.
+16. Validación del formulario web.
+17. Verificación final de Prettier y ESLint.

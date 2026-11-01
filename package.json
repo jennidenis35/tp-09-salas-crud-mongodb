@@ -1,33 +1,41 @@
+
 {
-"name": "tp-08-salas-http-mongodb",
- "version": "1.0.0",
- "description": "API REST de reservas de salas con Node.js, Express y MongoDB Atlas",
- "main": "src/index.js",
- "scripts": {
-  "start": "node --env-file=.env src/index.js",
-  "db:check": "node --env-file=.env scripts/comprobar-conexion.js",
-  "db:create": "node --env-file=.env scripts/crear-reserva.js",
-  "db:list": "node --env-file=.env scripts/listar-reservas.js",
-  "db:validate": "node scripts/probar-validaciones.js",
-  "format": "prettier --write src scripts",
-  "format:check": "prettier --check src scripts",
-  "lint": "eslint src scripts",
-  "check": "npm run format:check && npm run lint"
- },
- "keywords": [],
- "author": "Jennifer Denis Chaves",
- "license": "ISC",
- "type": "commonjs",
- "dependencies": {
-  "ejs": "^6.0.1",
-  "express": "^5.2.1",
-  "express-ejs-layouts": "^2.5.1",
-  "mongoose": "^9.11.4",
-  "morgan": "^1.12.1"
- },
- "devDependencies": {
-  "@eslint/js": "^10.0.1",
-  "eslint": "^10.12.0",
-  "prettier": "^3.9.10"
- }
+  "name": "tp-09-salas-crud-mongodb",
+  "version": "1.0.0",
+  "description": "API REST CRUD de reservas de salas con Node.js, Express y MongoDB Atlas",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node --env-file=.env src/index.js",
+    "db:check": "node --env-file=.env scripts/comprobar-conexion.js",
+    "db:create": "node --env-file=.env scripts/crear-reserva.js",
+    "db:list": "node --env-file=.env scripts/listar-reservas.js",
+    "db:validate": "node scripts/probar-validaciones.js",
+    "format": "prettier --write src scripts",
+    "format:check": "prettier --check src scripts",
+    "lint": "eslint src scripts",
+    "check": "npm run format:check && npm run lint"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "mongodb",
+    "mongoose",
+    "api-rest",
+    "crud"
+  ],
+  "author": "Jennifer Denis Chaves",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "ejs": "^6.0.1",
+    "express": "^5.2.1",
+    "express-ejs-layouts": "^2.5.1",
+    "mongoose": "^9.11.4",
+    "morgan": "^1.12.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "prettier": "^3.9.10"
+  }
 }

@@ -24,11 +24,41 @@ function crearServicioReservas() {
     return nuevaReserva.toObject();
   }
 
+  // Reemplazar todos los campos editables de una reserva.
+  async function reemplazar(id, datosReserva) {
+    return await Reserva.findOneAndReplace({ _id: id }, datosReserva, {
+      returnDocument: "after",
+      runValidators: true,
+      upsert: false,
+    }).lean();
+  }
+
+  // Modificar parcialmente una reserva.
+  async function actualizarParcial(id, cambios) {
+    return await Reserva.findByIdAndUpdate(
+      id,
+      { $set: cambios },
+      {
+        returnDocument: "after",
+        runValidators: true,
+        upsert: false,
+      },
+    ).lean();
+  }
+
+  // Eliminar físicamente una reserva.
+  async function eliminar(id) {
+    return await Reserva.findByIdAndDelete(id).lean();
+  }
+
   return {
     listar,
     buscarPorId,
     contar,
     crear,
+    reemplazar,
+    actualizarParcial,
+    eliminar,
   };
 }
 
